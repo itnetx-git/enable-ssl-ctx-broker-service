@@ -1,7 +1,7 @@
-﻿###################################################
+###################################################
 # Enable SSL on Citrix Broker Service             #
 # Author: Sebastian Busch                         #
-# EMail: sbusch@leitwerk.de                       #
+# EMail: s.busch@hartech.de                       #
 ####################################################
 # Following variables need to accomplish this Script 
 # Path to PFX 
@@ -44,6 +44,39 @@ Import-Certi
 
 #Switch to Server 2
 
+
+
+function EnableFirewallRule {
+Enter-PSSession $ServerName
+$Language=(Get-WinUserLanguageList)[0].LanguageTag
+If($Language -eq "de-DE")
+{
+Enable-NetFirewallRule -DisplayName "Datei- und Druckerfreigabe (SMB eingehend)"
+}
+ElseIf($Language -eq "en-US")
+{
+Enable-NetFirewallRule -DisplayName "File and Printer Sharing (SMB-In)"
+}
+Exit
+}
+EnableFirewallRule
+
+
+
+function DisableFirewallRule {
+Enter-PSSession $ServerName
+$Language=(Get-WinUserLanguageList)[0].LanguageTag
+If($Language -eq "de-DE")
+{
+Disable-NetFirewallRule -DisplayName "Datei- und Druckerfreigabe (SMB eingehend)"
+}
+ElseIf($Language -eq "en-US")
+{
+Disable-NetFirewallRule -DisplayName "File and Printer Sharing (SMB-In)"
+}
+Exit
+}
+
 #Copy Certificate to 2nd Server -> Please enable SMB ( Administrative Share )
 
 New-Item -Path \\$ServerName\C$\Temp -type directory -Force 
@@ -65,3 +98,5 @@ Invoke-Command -ComputerName $ServerName -ScriptBlock {
 
 # Remove Remote Certificate File
 Remove-Item -Path \\$ServerName\C$\Temp -Recurse -Force -Confirm:$false
+
+DisableFirewallRule
